@@ -104,6 +104,53 @@ app.get('/api/karting/:memberId', async (req, res) => {
   }
 });
 
+app.get('/api/search/:pseudo', async (req, res) => {
+  try {
+    const { pseudo } = req.params;
+    const response = await axios.post(
+        'https://www.apex-timing.com/gokarts/functions/request_results.php',
+        new URLSearchParams({
+          center_id: 162,
+          challenge_id: 0,
+          track_id: 1,
+          kart_id: 1,
+          period_id: 0,
+          period_start: '',
+          period_end: '',
+          age_min: 0,
+          age_max: 0,
+          sex: 0,
+          weight: 0,
+          start: 1,
+          count: 20,
+          search: pseudo
+        }),
+        {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+          }
+        }
+    );
+
+    if (!response.data.member_info) {
+      return res.status(404).json({ error: 'Membre non trouvé' });
+    }
+
+    res.json({
+      id: response.data.member_info.id,
+      name: response.data.member_info.name
+    });
+
+  } catch (error) {
+    console.error('Erreur:', error);
+    res.status(500).json({
+      error: 'Erreur lors de la recherche',
+      details: error.message
+    });
+  }
+});
+
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Serveur démarré sur le port ${PORT}`);
